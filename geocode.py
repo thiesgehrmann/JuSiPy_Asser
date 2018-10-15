@@ -12,18 +12,33 @@ class Geocode(object):
     Queries are Cached to prevent exceeding the limit
     """
 
-    __slots__ = [ '_cache', '_key' ]
+    __slots__ = [ '_cache', '_key', '_urls', '_open' ]
 
-    def __init__(self, key="oMQYBjXNZvdZetQhVAnAz1N6IJvQk8FD"):
+    def __init__(self, key="oMQYBjXNZvdZetQhVAnAz1N6IJvQk8FD", open=True):
         """
         Initialize the Geocode object
         Inputs:
             key: String. API Key for MapQuest
+            open: Boolean. Use OpenStreetMap data
         Output:
             Geocode object
         """
         self._cache = {}
         self._key = key
+        self._open = open
+
+        if open:
+            self._urls = { "POST" : { False: "http://open.mapquestapi.com/geocoding/v1/reverse?key=%s",
+                                      True: "http://open.mapquestapi.com/geocoding/v1/address?key=%s" },
+                            "GET" : { False: "http://open.mapquestapi.com/geocoding/v1/reverse?key=%s&%s",
+                                      True: "http://open.mapquestapi.com/geocoding/v1/address?key=%s&%s"}}
+        else:
+            self._urls = { "POST" : { False: "http://mapquestapi.com/geocoding/v1/reverse?key=%s",
+                                      True: "http://mapquestapi.com/geocoding/v1/address?key=%s" },
+                            "GET" : { False: "http://mapquestapi.com/geocoding/v1/reverse?key=%s&%s",
+                                      True: "http://mapquestapi.com/geocoding/v1/address?key=%s&%s"}}
+        #fi
+
     #edef
 
     def latlong(self, lat, long):
@@ -38,9 +53,14 @@ class Geocode(object):
 
         if (lat, long) not in self._cache:
             result = self._queryGet(False, { "location": '%f,%f' % (lat, long) })
-            result = result['results'][0]['locations'][0]
-            result = ','.join([result[f] for f in ['street', 'adminArea5', 'postalCode', 'adminArea1']])
-            self._cache[(lat, long)] = result
+            try:
+                result = result['results'][0]['locations'][0]
+                print(result)
+                result = ','.join([result[f] for f in ['street', 'adminArea5', 'postalCode', 'adminArea1']])
+                self._cache[(lat, long)] = result
+            except Exception as e:
+                self._cache[(lat, long)] = None
+            #fi
         #fi
         return self._cache[(lat, long)]
     #edef
@@ -56,10 +76,10 @@ class Geocode(object):
         """
         if address not in self._cache:
             result = self._queryPost(True, {"location":address})
-            if len(result['results']) > 0:
+            try:
                 latlng = result['results'][0]['locations'][0]['latLng']
                 self._cache[address] = (latlng['lat'], latlng['lng'])
-            else:
+            except Exception as e:
                 self._cache[address] = (None, None)
             #fi
         #fi
@@ -75,9 +95,8 @@ class Geocode(object):
             data: Dictionary with POST data
         Output: JSON result
         """
-        url = { False: "http://open.mapquestapi.com/geocoding/v1/reverse?key=%s",
-                True: "http://open.mapquestapi.com/geocoding/v1/address?key=%s"}
-        url = url[address] % self._key
+
+        url = self._urls["POST"][address] % self._key
         response = requests.post(url, data=data)
 
         return response.json()
@@ -91,10 +110,10 @@ class Geocode(object):
             data: Dictionary key/value pairs
         Output: JSON result
         """
-        url = { False: "http://open.mapquestapi.com/geocoding/v1/reverse?key=%s&%s",
-                True: "http://open.mapquestapi.com/geocoding/v1/address?key=%s&%s"}
-        url = url[address] % (self._key, '&'.join(['%s=%s' % (k,v) for (k,v) in data.items() ]))
+
+        url = self._urls["GET"][address] % (self._key, '&'.join(['%s=%s' % (k,v) for (k,v) in data.items() ]))
         response = requests.get(url)
 
         return response.json()
     #edef
+#eclass
