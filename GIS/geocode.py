@@ -4,6 +4,7 @@ class Geocode(object):
     """
     Use MapQuest API to lookup addresses and Lat/Long codes.
     (Uses OpenStreetMap data)
+    Documentation for the API is available at: https://developer.mapquest.com/documentation/open/geocoding-api/
 
     Provides two functions:
         * address: Look up the lat/longitude of an address
@@ -55,7 +56,6 @@ class Geocode(object):
             result = self._queryGet(False, { "location": '%f,%f' % (lat, long) })
             try:
                 result = result['results'][0]['locations'][0]
-                print(result)
                 result = ','.join([result[f] for f in ['street', 'adminArea5', 'postalCode', 'adminArea1']])
                 self._cache[(lat, long)] = result
             except Exception as e:
