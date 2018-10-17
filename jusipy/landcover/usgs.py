@@ -1,39 +1,52 @@
 #username: jusipy
 #password: jusipy847T0
 
+from PIL import Image
+import matplotlib.pylab as plt
+from pyhdf.SD import SD
 import requests
 import os
+import numpy as np
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
+from .. import GIS
 
 ################################################################################
 
 data = {
     "GFSAD1KCD" : {
-        "tif" : "https://e4ftl01.cr.usgs.gov/MEASURES/GFSAD1KCD.001/2007.01.01/GFSAD1KCD.2010.001.2016348142525.tif",
-        "xml" : "https://e4ftl01.cr.usgs.gov/MEASURES/GFSAD1KCD.001/2007.01.01/GFSAD1KCD.2010.001.2016348142525.tif.xml",
+        "dat" : "https://e4ftl01.cr.usgs.gov/MEASURES/GFSAD1KCD.001/2007.01.01/GFSAD1KCD.2010.001.2016348142525.tif",
         "url" : "https://lpdaac.usgs.gov/dataset_discovery/measures/measures_products_table/gfsad1kcd_v001",
-        "lab" : ["Ocean", "Irrigated", "Irrigated Mixed Crops 1", "Irrigated Mixed Crops 2", "Rainfed", "Rainfed",
+        "type" : "tif",
+        "lab" : ["No Data", "Ocean", "Irrigated", "Irrigated Mixed Crops 1", "Irrigated Mixed Crops 2", "Rainfed",
                     "Rainfed", "Rainfed Mixed Crops", "Fractions of Mixed Crops", "Non-Cropland" ]},
+
     "GFSAD1KCM" : {
-        "tif" : "https://e4ftl01.cr.usgs.gov/MEASURES/GFSAD1KCM.001/2007.01.01/GFSAD1KCM.2010.001.2016348142550.tif",
-        "xml" : "https://e4ftl01.cr.usgs.gov/MEASURES/GFSAD1KCM.001/2007.01.01/GFSAD1KCM.2010.001.2016348142550.tif.xml",
+        "dat" : "https://e4ftl01.cr.usgs.gov/MEASURES/GFSAD1KCM.001/2007.01.01/GFSAD1KCM.2010.001.2016348142550.tif",
         "url" : "https://lpdaac.usgs.gov/dataset_discovery/measures/measures_products_table/gfsad1kcm_v001",
+        "type" : "tif",
         "lab" : [ "Ocean", "Croplands, Irrigation", "Croplands, Irrigation", "Croplands, Rainfed",
                 "Croplands, Rainfed", "Croplands, Rainfed", "unknown1", "unknown2", "Non-Cropland",]},
-    "MCD12C1" : {}
+
+    "MCD12C1" : {
+        "hdf" : "https://e4ftl01.cr.usgs.gov/MOTA/MCD12C1.006/2017.01.01/MCD12C1.A2017001.006.2018257171411.hdf",
+        "url" : "https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mcd12c1",
+        "type" : "hdf",
+        "lab" : []
+    }
 }
 
 ################################################################################
 
 class USGS(object):
     """
-    Collect land cover features from the USGSself.
+    Collect land cover features from the USGS.
     https://lpdaac.usgs.gov/dataset_discovery?f%5B0%5D=im_field_spatial_extent%3A50&f%5B1%5D=im_field_product%3A6
 
     GFSAD1KCD:
     """
 
-    __slots__ = [ '_dataset', '_matrix', '_username', '_password' ]
+    __slots__ = [ '_dataset', '_matrix', '_username', '_password', '_lookup', '_draw', '_dat_filename' ]
 
     def __init__(self, dataset, username='jusipy', password='jusipy847T0', overwrite=False):
         self._dataset  = dataset
@@ -43,22 +56,91 @@ class USGS(object):
         if dataset not in data:
             return None
         #fi
+        dat, dat_type = data[dataset]['dat'], data[dataset]['type']
+        status, self._dat_filename = self._download_dataset(dat, overwrite=overwrite, dat_type=dat_type)
 
-        tif, xml = data[dataset]['tif'], data[dataset]['xml']
+        if not(status):
+            return None
+        #fi
 
-        status, self._tif_filename, self.xml_filename = self._download_dataset(tif, xml, overwrite=overwrite)
+        Image.MAX_IMAGE_PIXELS = 815068801
+        if dat_type == 'tif':
+            self._matrix = np.array(Image.open(self._dat_filename))
+            self._lookup = self._lookup_tif
+            self._draw   = self._draw_tif
+        elif dat_type in 'hdf':
+            self._matrix = None
+            self._lookup = self._lookup_hdf
+            self._draw   = self._draw_hdf
+        else:
+            return None
+        #fi
+
     #edef
 
-    def load_matrix(self):
+    def _download_dataset(self, dat, overwrite, dat_type):
+        dat_filename = "%s/usgs_%s.%s" % (dir_path, self._dataset, dat_type)
+        dat_status = download_earthdata(dat, dat_filename, self._username, self._password, overwrite=overwrite)
+
+        return dat_status, dat_filename
+    #edef
+
+    def lookup(self, lat, long, pixel_window=0):
+        """
+        Lookup the land cover classification at this location
+        Inputs:
+            lat, long: Floats. Latitude and Longitude
+            pixel_window: Integer. Return the average counts per pixel in an PxP square around the location given.
+
+        Output:
+            numpy array of features
+
+        Depending upon the resolution, we multiply the latitude and longitude by a constant to index the data matrix.
+        """
+        return self._lookup(lat, long, pixel_window)
+    #edef
+
+    def _draw_tif(self, lat, long):
+        return GIS.projection.draw(self._matrix, lat, long)
+    #edef
+
+    def _draw_hdf(self, lat, long):
+        return None
+    #edef
+
+    def draw(self, lat=0, long=0):
+        return self._draw(lat, long)
+    #edef
 
 
-    def _download_dataset(self, tif, xml, overwrite):
-        tif_filename = "%s/usgs_%s.tif" % (dir_path, self._dataset)
-        xml_filename = "%s/usgs_%s.xml" % (dir_path, self._dataset)
-        tif_status = download_earthdata(tif, tif_filename, self._username, self._password, overwrite=overwrite)
-        xml_status = download_earthdata(xml, xml_filename, self._username, self._password, overwrite=overwrite)
+    def _lookup_tif(self, lat, long, pixel_window):
+        """
+        See docstring for lookup
+        """
 
-        return (tif_status and xml_status), tif_filename, xml_filename
+        if self._matrix is None:
+            return None
+        #
+
+        rel_region = GIS.projection.latlong_lookup(self._matrix, lat, long, pixel_window=pixel_window)
+
+        pix_sum  = None
+
+        return rel_region
+
+        for idx in np.nditer(rel_region):
+            val      = self._dummy_labels(rel_region[idx])
+            pix_sum  = val if (pix_sum is None) else (pix_sum + val)
+        #efor
+
+        return pix_sum / np.prod(rel_region.shape)
+    #edef
+
+    def _lookup_hdf(self, lat, long, pixel_window):
+        """
+        See docstring for lookup
+        """
+        return None
     #edef
 
 #eclass

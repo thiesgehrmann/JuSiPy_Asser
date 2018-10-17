@@ -7,6 +7,7 @@ from PIL import Image
 import numpy as np
 
 from .. import utils
+from .. import GIS
 
 class Glcf_avhrr(object):
     """
@@ -27,6 +28,7 @@ class Glcf_avhrr(object):
             resolution: Resolution to use. String. [1deg|8km|1km]
         """
         self._dataFile = self._downloadResolution(resolution)
+        Image.MAX_IMAGE_PIXELS = 648000001
         self._matrix = np.array(Image.open(gzip.open(self._dataFile)))
         self._resolution = resolution
         self.labels = ['Water', 'Evergreen Needleleaf Forest', 'Evergreen Broadleaf Forest',
@@ -54,11 +56,16 @@ class Glcf_avhrr(object):
         return fileName
     #edef
 
+    def draw(self, lat=0, long=0):
+        return GIS.projection.draw(self._matrix, lat, long)
+    #edef
+
     def lookup(self, lat, long, pixel_window=0):
         """
         Lookup the land cover classification at this location
         Inputs:
             lat, long: Floats. Latitude and Longitude
+            pixel_window: Integer. Return the average counts per pixel in an PxP square around the location given.
 
         Output:
             numpy array of features
@@ -68,35 +75,17 @@ class Glcf_avhrr(object):
 
         if self._matrix is None:
             return None
-
-        if self._resolution == '1deg':
-            mult = 1
-        elif self._resolution == '8km':
-            mult = 100.0/8.0
-        elif self._resolution == '1km':
-            mult = 100.0
-        else:
-            return None
         #fi
 
-        lat  = mult * (180 - (lat + 90))
-        long = mult * (long + 180)
+        rel_region = GIS.projection.latlong_lookup(self._matrix, lat, long, pixel_window)
 
-        lat  = int(lat)
-        long = int(long)
-
-        pix_sum  = None
-        n_pixels = 0
-
-        for pixel_i in range((lat-pixel_window),(lat+pixel_window+1)):
-            for pixel_j in range((long-pixel_window), (long+pixel_window+1)):
-                val      = self._dummy_labels(self._matrix[pixel_i, pixel_j])
-                pix_sum  = val if (pix_sum is None) else (pix_sum + val)
-                n_pixels = n_pixels + 1
-            #efor
+        pix_sum = None
+        for idx in np.nditer(rel_region):
+            val      = self._dummy_labels(rel_region[idx])
+            pix_sum  = val if (pix_sum is None) else (pix_sum + val)
         #efor
 
-        return pix_sum / n_pixels
+        return pix_sum / np.prod(rel_region.shape)
     #edef
 
     def _dummy_labels(self, value):

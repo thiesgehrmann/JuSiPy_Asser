@@ -1,5 +1,7 @@
-- pillow
+- pip pillow
 - numpy
 - scipy
 - scikit-learn
 - requests
+- pyhdf
+- matplotlib

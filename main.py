@@ -14,6 +14,10 @@ print('%f, %f -> %s' % (lat, long, address))
 
 ################################################################################
 # Test the landcover datasets
+import jusipy
 
-lc = jusipy.landcover.Glcf_avhrr(resolution='8km')
-lc.lookup(lat, long)
+lat, long = (52.151816, 4.481109)
+# Test GLCF
+glcf = jusipy.landcover.Glcf_avhrr(resolution='1km')
+print(glcf.lookup(lat, long, pixel_window=5))
+glcf.draw(lat, long).show()
