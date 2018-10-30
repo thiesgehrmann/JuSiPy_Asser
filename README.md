@@ -114,8 +114,7 @@ Readings
 [https://eprints.soas.ac.uk/16795/](https://eprints.soas.ac.uk/16795/)
 - Land grab/data grab: precision agriculture and its new horizons (paper)
 [https://www.tandfonline.com/doi/full/10.1080/03066150.2017.1415887?scroll=top&amp;needAccess=true](https://www.tandfonline.com/doi/full/10.1080/03066150.2017.1415887?scroll=top&amp;needAccess=true)
-- Global Map of &quot;Land Grabs&quot; By Country and By Sector
-
+- Global Map of &quot;Land Grabs&quot; By Country and By Sector 
 [http://www.circleofblue.org/LAND.html](http://www.circleofblue.org/LAND.html)
 
 Existing Data
