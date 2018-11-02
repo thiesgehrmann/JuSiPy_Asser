@@ -2,6 +2,8 @@ import pandas as pd
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
+from .. import GIS
+
 class GRAIN(object):
     """
     The GRAIN Dataset.
@@ -41,6 +43,12 @@ class GRAIN(object):
                               'Sector' : 'intention',
                               'Hectares' : 'intended_size',
                               'Status of deal': 'negotiation_status'})
+
+        CC = GIS.CountryCode()
+        M['investor_country'] = M['investor_country'].apply(lambda x: x.split(',') if isinstance(x, str) else [])
+        M['target_country_iso3'] = M.target_country.apply(lambda c: CC[c].iso3)
+        M['investor_country_iso3'] = M.investor_country.apply(lambda L: [ cc.iso3 for cc in CC[L]] )
+
         return M
     #edef
 
@@ -61,33 +69,37 @@ class GRAIN(object):
         return self._countries
     #edef
 
-    def dealsFrom(self, countries):
+    def dealsFrom(self, countries, iso3=True):
         """
         Return all deals in which the investor is in the list of countries provided
         Input:
             countries: String of single country, of list of strings of countries
+            iso3 : Boolean. Lookup iso3 identifiers
         Output:
             pandas data frame
         """
         if isinstance(countries, str):
             countries = [ countries ]
         #fi
-        mat = self.M[self.M.investor_country.apply(lambda c: isinstance(c, str) and any([(country in c) for country in countries]))]
+        col = self.M.investor_country_iso3 if iso3 else self.M.investor_country
+        mat = self.M[col.apply(lambda c: hasattr(c, '__iter__') and any([(country in c) for country in countries]))]
         return GRAIN(matrix=mat)
     #edef
 
-    def dealsTo(self, countries):
+    def dealsTo(self, countries, iso3=True):
         """
         Return all deals in which the target country is in the list of countries provided
         Input:
             countries: String of single country, of list of strings of countries
+            iso3 : Boolean. Lookup iso3 identifiers
         Output:
             pandas data frame
         """
         if isinstance(countries, str):
             countries = [ countries ]
         #fi
-        mat = self.M[self.M.target_country.isin(countries)]
+        col = self.M.target_country_iso3 if iso3 else self.M.target_country
+        mat = self.M[col.isin(countries)]
         return GRAIN(matrix=mat)
     #edef
 

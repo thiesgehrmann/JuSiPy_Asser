@@ -65,8 +65,8 @@ class GoogleCode(object):
         if address not in self._cache:
             result = self._queryAddress(address)
             try:
-                result = result['results'][0]['geometry']['location']
-                self._cache[address] = (result['lat'], result['lng'])
+                #result = result['results'][0]['geometry']['location']
+                self._cache[address] = result #(result['lat'], result['lng'])
             except Exception as e:
                 self._cache[address] = (None, None)
             #fi
