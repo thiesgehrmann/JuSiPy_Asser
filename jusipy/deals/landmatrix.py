@@ -17,7 +17,7 @@ class LandMatrix(object):
         dealsFrom: Filters the deals based on the investor origin.
         dealsTo: Filters the deals based on the target of the investment
     """
-    __slots__ = [ '_matrix', '_countries' ]
+    __slots__ = [ '_matrix', '_countries', '_countries_iso3' ]
     def __init__(self, matrix=None):
         """
         matrix: if None, the dataset is loaded from file. Otherwise, matrix is used as the dataset.
@@ -76,11 +76,22 @@ class LandMatrix(object):
     def countries(self):
         if self._countries is None:
             in_countries  = self.M.target_country.values
-            out_countries = [out.split(',') for out in self.M.investor_country.values if isinstance(out, str) ]
+            out_countries = [ out for out in self.M.investor_country.values if isinstance(out, str) ]
             out_countries = [ c.strip() for out in out_countries for c in out  ]
             self._countries = sorted(set(in_countries) | set(out_countries))
         #fi
         return self._countries
+    #edef
+
+    @property
+    def countries_iso3(self):
+        if self._countries is None:
+            in_countries  = self.M.target_country_iso3.values
+            out_countries = [ out for out in self.M.investor_country_iso3.values if isinstance(out, str) ]
+            out_countries = [ c.strip() for out in out_countries for c in out  ]
+            self._countries_iso3 = sorted(set(in_countries) | set(out_countries))
+        #fi
+        return self._countries_iso3
     #edef
 
     def dealsFrom(self, countries, iso3=True):

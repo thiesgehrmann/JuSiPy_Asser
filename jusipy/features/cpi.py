@@ -12,7 +12,7 @@ class CPI(object):
         M: The matrix with raw data
     """
 
-    __slots__ = [ '_matrix', '_countries', '_countries_iso3', '_rank_index', '_score_index' ]
+    __slots__ = [ '_matrix', '_countries', '_countries_iso3', '_rank_index', '_score_index', '_features' ]
 
     def __init__(self):
         self._matrix = pd.read_csv('%s/landportal-TI-CPI.csv' % dir_path, sep=';')
@@ -24,6 +24,17 @@ class CPI(object):
         self._countries = sorted(set(df.countryLabel.values))
         self._score_index = dict(df[['country_iso3', 'value']].values)
         self._rank_index = { c:i  for i,c in enumerate(sorted(self._score_index, key=lambda x: self._score_index[x])) }
+        self._features = pd.DataFrame({ 'country_iso3' : self._countries_iso3,
+                                        'rank' : [self.rank(c) for c in self._countries_iso3],
+                                        'score' : [self.score(c) for c in self._countries_iso3]}).set_index('country_iso3')
+    #edef
+
+    @property
+    def features(self):
+        """
+        Return a dataframe of the features, indexed by iso3 country ID
+        """
+        return self._features
     #edef
 
     @property
