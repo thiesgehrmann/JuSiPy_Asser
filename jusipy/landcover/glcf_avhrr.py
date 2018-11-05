@@ -9,7 +9,7 @@ import numpy as np
 from .. import utils
 from .. import GIS
 
-class Glcf_avhrr(object):
+class GLCF(object):
     """
     Look up land cover classifications from the Global Land Cover Foundation, using AVHRR data.
 

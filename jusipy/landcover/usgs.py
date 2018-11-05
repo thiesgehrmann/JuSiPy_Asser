@@ -43,12 +43,18 @@ class USGS(object):
     Collect land cover features from the USGS.
     https://lpdaac.usgs.gov/dataset_discovery?f%5B0%5D=im_field_spatial_extent%3A50&f%5B1%5D=im_field_product%3A6
 
-    GFSAD1KCD:
+    Available datasets:
+     * GFSAD1KCD
+     * GFSAD1KCM
+     * MCD12C1 (MODIS - NEED a different way to load this dataset...)
     """
 
     __slots__ = [ '_dataset', '_matrix', '_username', '_password', '_lookup', '_draw', '_dat_filename' ]
 
     def __init__(self, dataset, username='jusipy', password='jusipy847T0', overwrite=False):
+        """
+
+        """
         self._dataset  = dataset
         self._username = username
         self._password = password

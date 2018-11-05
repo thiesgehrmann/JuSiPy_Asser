@@ -1,2 +1,2 @@
-from .glcf_avhrr import Glcf_avhrr
+from .glcf_avhrr import GLCF
 from .usgs import USGS
