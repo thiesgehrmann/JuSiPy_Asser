@@ -15,16 +15,16 @@ class Geocode(object):
 
     __slots__ = [ '_cache', '_key', '_urls', '_open' ]
 
-    def __init__(self, key="oMQYBjXNZvdZetQhVAnAz1N6IJvQk8FD", open=True):
+    def __init__(self, key="oMQYBjXNZvdZetQhVAnAz1N6IJvQk8FD", open=True, cache={}):
         """
         Initialize the Geocode object
         Inputs:
             key: String. API Key for MapQuest
-            open: Boolean. Use OpenStreetMap data
+            Use this object as a cache (default is dict.)
         Output:
             Geocode object
         """
-        self._cache = {}
+        self._cache = cache
         self._key = key
         self._open = open
 

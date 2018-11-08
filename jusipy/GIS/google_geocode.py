@@ -15,16 +15,16 @@ class GoogleCode(object):
 
     __slots__ = [ '_cache', '_key', '_urls' ]
 
-    def __init__(self, key="AIzaSyBLDh-LJ-bJBEIwLRgEosD1cdn_OtuS1Kg "):
+    def __init__(self, key="AIzaSyBLDh-LJ-bJBEIwLRgEosD1cdn_OtuS1Kg ", cache={}):
         """
         Initialize the Geocode object
         Inputs:
             key: String. API Key for MapQuest
-            open: Boolean. Use OpenStreetMap data
+            cache: Use this object as a cache (default is dict.)
         Output:
             Geocode object
         """
-        self._cache = {}
+        self._cache = cache
         self._key = key
         self._urls = { "address": "https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s",
                        "latlong": "https://maps.googleapis.com/maps/api/geocode/json?latlng=%f,%f&key=%s"}
@@ -62,11 +62,12 @@ class GoogleCode(object):
         Output:
             Tuple (latitude, longitude), (Float, Float)
         """
+        address = address.lower()
         if address not in self._cache:
             result = self._queryAddress(address)
             try:
-                #result = result['results'][0]['geometry']['location']
-                self._cache[address] = result #(result['lat'], result['lng'])
+                result = result['results'][0]['geometry']['location']
+                self._cache[address] = (result['lat'], result['lng'])
             except Exception as e:
                 self._cache[address] = (None, None)
             #fi
