@@ -5,3 +5,7 @@
 - requests
 - pyhdf
 - matplotlib
+- gdal
+- libspatialite
+- pip:
+ - pyModis

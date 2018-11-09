@@ -37,10 +37,8 @@ def latlong_lookup(matrix, lat, long, pixel_window=0):
 
     lat, long = project(matrix, lat, long)
 
-    pix_sum  = None
-    n_pixels = 0
-
-    return matrix[lat-pixel_window:lat+pixel_window+1,long-pixel_window:long+pixel_window+1]
+    res = matrix[lat-pixel_window:lat+pixel_window+1,long-pixel_window:long+pixel_window+1]
+    return res
 #edef
 
 def draw(matrix, lat=0, long=0):

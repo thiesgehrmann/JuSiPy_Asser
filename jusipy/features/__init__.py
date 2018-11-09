@@ -1,11 +1,7 @@
-from .cpi import CPI # Corruption perception index
-from .lg import LG   # Land and Gender
-from .ard import ARD # WB Agricultural and Rural development
-from .spl import SPL # WB Social Protection and Labor
-from .sd import SD   # WB Social Development
-from .se import SE  #
+from .lp import WB_LGAF, WB_SE, LMM_PICL, LMM_LSIC, WB_LG, TI_CPI
+from .wb import WB_ARD, WB_SPL, WB_SD
 
-_datasets = [ CPI, LG, SE, ARD, SPL, SD ]
+_datasets = [ WB_LGAF, WB_SE, LMM_PICL, LMM_LSIC, WB_LG, TI_CPI, WB_ARD, WB_SPL, WB_SD ]
 
 def All(datasets=None):
     from .all_datasets import All as _all_datasets

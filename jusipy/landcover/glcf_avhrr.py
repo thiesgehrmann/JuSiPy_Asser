@@ -80,8 +80,8 @@ class GLCF(object):
         rel_region = GIS.projection.latlong_lookup(self._matrix, lat, long, pixel_window)
 
         pix_sum = None
-        for idx in np.nditer(rel_region):
-            val      = self._dummy_labels(rel_region[idx])
+        for value in np.nditer(rel_region):
+            val      = self._dummy_labels(value)
             pix_sum  = val if (pix_sum is None) else (pix_sum + val)
         #efor
 
@@ -89,7 +89,7 @@ class GLCF(object):
     #edef
 
     def _dummy_labels(self, value):
-        labels = np.zeros(14)
+        labels = np.zeros(15)
         labels[value] = 1
         return labels
     #edef
