@@ -12,6 +12,9 @@ def project(matrix, lat, long):
     """
     mult = float(matrix.shape[1]/360.0)
 
+    assert abs(lat) <= 90
+    assert abs(long) <= 180
+
     lat  = mult * (180 - (lat + 90))
     long = mult * (long + 180)
 
@@ -20,7 +23,6 @@ def project(matrix, lat, long):
 
     return lat, long
 #edef
-
 
 def latlong_lookup(matrix, lat, long, pixel_window=0):
     """
@@ -37,13 +39,26 @@ def latlong_lookup(matrix, lat, long, pixel_window=0):
 
     lat, long = project(matrix, lat, long)
 
-    res = matrix[lat-pixel_window:lat+pixel_window+1,long-pixel_window:long+pixel_window+1]
+    # | a b |
+    # | c d |
+
+    a = max(lat-pixel_window, 0)
+    b = min(lat+pixel_window+1, matrix.shape[0])
+    c = max(long-pixel_window, 0)
+    d = min(long+pixel_window+1, matrix.shape[1])
+
+    res = matrix[a:b,c:d]
     return res
 #edef
 
-def draw(matrix, lat=0, long=0):
-    fig, ax = plt.subplots(1)
+def draw(matrix, lat=0, long=0, ax=None):
+    if ax is None:
+        fig, axes = plt.subplots(ncols=1, nrows=1, figsize=(10,5))
+        ax = axes
+    #fi
+
     ax.imshow(matrix)
+
     lat, long = project(matrix, lat, long)
     size_y, size_x = matrix.shape
     ax.plot([0, size_x], [lat, lat], c='r')

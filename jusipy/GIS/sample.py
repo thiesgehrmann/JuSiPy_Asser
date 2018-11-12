@@ -2,6 +2,10 @@ import numpy as np
 from .. import landcover
 
 def _random_unit_sphere():
+    """
+    Randomly sample a point from the unit sphere
+    http://mathworld.wolfram.com/SpherePointPicking.html
+    """
     u, v = np.random.uniform(size=2)
     long = 2 * np.pi * u
     lat = np.arccos(2*v - 1)

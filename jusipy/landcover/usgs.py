@@ -53,7 +53,14 @@ class USGS(object):
 
     def __init__(self, dataset, username='jusipy', password='jusipy847T0', overwrite=False):
         """
-
+        Inputs:
+            dataset: String.
+             * GFSAD1KCD - GEOTIFF
+             * GFSAD1KCM - GEOTIFF
+             * MCD12C1 (MODIS - NEED a different way to load this dataset...)
+            username: String. EARTHDATA.nasa.gov username
+            password: String. EARTHDATA.nasa.gov password
+            overwrite: Boolean. Overwrite the downloaded file (or not)
         """
         self._dataset  = dataset
         self._username = username
@@ -106,16 +113,16 @@ class USGS(object):
         return self._lookup(lat, long, pixel_window)
     #edef
 
-    def _draw_tif(self, lat, long):
-        return GIS.projection.draw(self._matrix, lat, long)
+    def _draw_tif(self, lat, long, **kwargs):
+        return GIS.projection.draw(self._matrix, lat, long, **kwargs)
     #edef
 
     def _draw_hdf(self, lat, long):
         return None
     #edef
 
-    def draw(self, lat=0, long=0):
-        return self._draw(lat, long)
+    def draw(self, lat=0, long=0, **kwargs):
+        return self._draw(lat, long, **kwargs)
     #edef
 
 

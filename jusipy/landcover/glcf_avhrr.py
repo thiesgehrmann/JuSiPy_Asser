@@ -56,8 +56,8 @@ class GLCF(object):
         return fileName
     #edef
 
-    def draw(self, lat=0, long=0):
-        return GIS.projection.draw(self._matrix, lat, long)
+    def draw(self, lat=0, long=0, **kwargs):
+        return GIS.projection.draw(self._matrix, lat, long, **kwargs)
     #edef
 
     def lookup(self, lat, long, pixel_window=0):
