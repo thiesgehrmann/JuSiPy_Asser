@@ -89,7 +89,7 @@ class GLCF(object):
     #edef
 
     def _dummy_labels(self, value):
-        labels = np.zeros(15)
+        labels = np.zeros(len(self.labels))
         labels[value] = 1
         return labels
     #edef
