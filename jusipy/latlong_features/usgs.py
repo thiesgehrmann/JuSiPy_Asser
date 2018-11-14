@@ -3,7 +3,6 @@
 
 from PIL import Image
 import matplotlib.pylab as plt
-from pyhdf.SD import SD
 import requests
 import os
 import numpy as np

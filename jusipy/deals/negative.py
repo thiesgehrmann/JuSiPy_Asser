@@ -1,6 +1,9 @@
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.cluster import MeanShift
+import matplotlib.pylab as plt
+import numpy as np
+import pandas as pd
 
 class Negative(object):
     """
@@ -48,47 +51,58 @@ class Negative(object):
         Run the negative selection pipeline
         """
 
-        self.pca(**kwargs)
-        self.tsne(**kwargs)
-        self.cluster(**kwargs)
-        self.negatives(**kwargs)
+        if self._pca is None:
+            self.pca(**kwargs)
+        #fi
+        if self._tsne is None:
+            self.tsne(**kwargs)
+        #fi
+        if self._clusters is None:
+            self.cluster(**kwargs)
+        #fi
+        if self._negatives is None:
+            self.negatives(**kwargs)
+        #fi
         return self._negatives
     #edef
 
     @property
-    def negatives(self):
+    def negatives(self, **kwargs):
         return self._negatives
     #edef
 
-    def pca(self):
+    def pca(self, **kwargs):
         if self._features is None:
             return None
         #fi
+        print('\rPerforming PCA')
         pca  = PCA(n_components=2)
-        pca_features  = pca.fit_transform(features)
+        pca_features  = pca.fit_transform(self._features)
         self._pca = pca_features
         return self._pca
     #edef
 
-    def tsne(self):
+    def tsne(self, **kwargs):
         if self._features is None:
             return None
         #fi
+        print('\rPerforming TSNE')
         tsne = TSNE(n_components=2)
-        tsne_features = tsne.fit_transform(features)
+        tsne_features = tsne.fit_transform(self._features)
         self._tsne = tsne_features
         return self._tsne
     #edef
 
-    def cluster(self, bandwidth=10):
+    def cluster(self, bandwidth=10, **kwargs):
         if self._tsne is None:
             return None
         #fi
+        print('\rPerforming Clustering')
         self._clusters = MeanShift(bandwidth=bandwidth).fit(self._tsne).labels_
         return self._clusters
     #edef
 
-    def negatives(self, threshold=0.95):
+    def negatives(self, threshold=0.95, **kwargs):
         if self._clusters is None:
             return None
         #fi
@@ -125,49 +139,63 @@ class Negative(object):
             Outputs:
                 An array of negative (0) and positive (1) labels
             """
-            negative_clusters = select_negative_clusters(clustering_labels, positive_labels, threshold)
+            negative_clusters = select_negative_clusters(cluster_labels, positive_labels, threshold)
             labels = np.array([ 1 ] * len(cluster_labels))
             for nc in negative_clusters:
                 labels[np.where(cluster_labels == nc)] = 0
             #efor
             # Correct the true positive points we had which lie in negative clusters
             labels[np.where(positive_labels == 1)] = 1
-            return labels
+            return 1-labels
         #edef
-        negatives = select_negative_points(self._clusters, self._positive, threshold=threshold)
+        print('\rSelecting negatives')
+        negatives = select_negative_points(self._clusters, self._positives, threshold=threshold)
         self._negatives = negatives
         return negatives
     #edef
 
     def plot(self):
-        fig, axes = [ ax for row in plt.subplots(nrows=2, ncols=2) for ax in row ]
+        """
+        Plot the results of the pipeline
+        """
+        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(20,20))
+        axes = [ ax for row in axes for ax in row ]
 
         if self._pca is not None:
             axes[0].set_title('PCA embedding')
-            axes[0].scatter(zip(*self._pca), c=self._positives)
+            axes[0].scatter(*list(zip(*self._pca[self._positives==1,:])), c='g', s=1, zorder=2, label='positive')
+            axes[0].scatter(*list(zip(*self._pca[self._positives==0,:])), c='b', s=1, zorder=1, alpha=0.5, label='random')
             axes[0].set_xlabel('PCA Component 1')
             axes[0].set_ylabel('PCA Component 2')
+            axes[0].legend()
         #fi
 
         if self._tsne is not None:
             axes[1].set_title('TSNE embedding')
-            axes[1].scatter(zip(*self._tsne), c=self._positives)
+            axes[1].scatter(*list(zip(*self._tsne[self._positives==1,:])), c='g', s=1, zorder=2, label='positive')
+            axes[1].scatter(*list(zip(*self._tsne[self._positives==0,:])), c='b', s=1, zorder=1, alpha=0.5, label='random')
             axes[1].set_xlabel('TSNE Component 1')
             axes[1].set_ylabel('TSNE Component 2')
+            axes[1].legend()
         #fi
 
-        if self._clustering is not None:
+        if self._clusters is not None:
             axes[2].set_title('TSNE clustering')
-            axes[2].scatter(zip(*self._tsne), c=self._clustering)
+            axes[2].scatter(*list(zip(*self._tsne)), c=self._clusters, s=1)
             axes[2].set_xlabel('TSNE Component 1')
             axes[2].set_ylabel('TSNE Component 2')
+            axes[2].legend()
         #fi
 
         if self._negatives is not None:
             axes[3].set_title('Negative annotation')
-            axes[3].scatter(zip(*self._tsne), c=self._negatives)
+            axes[3].scatter(*list(zip(*self._tsne[self._positives==1,:])), c='g', s=1, zorder=3, label='positive')
+            axes[3].scatter(*list(zip(*self._tsne[self._negatives==1,:])), c='r', s=1, zorder=2, label='negative')
+            axes[3].scatter(*list(zip(*self._tsne[((self._negatives==0) & (self._positives==0)),:])),
+                            c='b', s=1, zorder=1, alpha=0.5, label='random')
             axes[3].set_xlabel('TSNE Component 1')
             axes[3].set_ylabel('TSNE Component 2')
+            axes[3].legend()
         #fi
 
         return fig, axes
