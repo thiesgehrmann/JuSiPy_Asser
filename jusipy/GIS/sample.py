@@ -43,6 +43,8 @@ def random_latlong(land=False, glcf=None, size=1):
         land: Boolean. Only return points on land
         glcf: a GLCF object. (Default the lowest resolution (1deg) is used)
         size: The number of coordinates to return
+    Output:
+        A list of (x,y) coordinates randomly scattered across the earth
     """
     points = None
     if land:
@@ -58,4 +60,37 @@ def random_latlong(land=False, glcf=None, size=1):
         return points[0]
     #fi
     return points
+#edef
+
+def grid_latlong(land=False, glcf=None, lat_points=1000, long_points=None):
+    """
+    Return lat/longitude coordinates uniformly sampled across the globe (not enriched at the poles)
+    Inputs:
+        land: Boolean. Only return points on land
+        glcf: a GLCF object. (Default the lowest resolution (1deg) is used)
+        lat_points: The number of points to sample in the latitude
+        long_points: The number of points to sample on the equator
+    Output:
+        A list of (x,y) coordinates uniformly scattered across the earth
+    """
+
+    long_points = 2*lat_points
+    coords = []
+
+    for lat in np.arange(-np.pi,np.pi, (2*np.pi)/lat_points)[1:-1]:
+        step_size = ((2*np.pi)/long_points)/((np.abs(np.cos(lat/2))))
+        steps = np.arange(-np.pi,np.pi, step_size)[1:-1]
+        for long in steps:
+            coords.append(((lat/np.pi)*90, (long/np.pi)*180))
+        #efr
+    #efor
+
+    if land:
+        if glcf is None:
+            glcf = jusipy.latlong_features.GLCF(resolution='1deg')
+        #fi
+        coords = [ (lat, long) for (lat, long) in coords if glcf.lookup(lat, long)[0] != 1 ]
+    #fi
+
+    return coords
 #edef
