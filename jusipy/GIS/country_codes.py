@@ -15,7 +15,7 @@ class CountryCode(object):
     __slots__ = [ '_matrix', '_index', '_tups', '_special_cases' ]
 
     def __init__(self):
-        self._matrix = pd.read_csv('%s/country_iso3.csv' % dir_path, sep=';')
+        self._matrix = pd.read_csv('%s/data/country_iso3.csv' % dir_path, sep=';')
         tup = namedtuple('countrycode', ['country', 'iso2', 'iso3', 'number'])
         self._tups = list(map(lambda x: tup(*x), self._matrix.values))
         self._index = { str(k).lower() : i for i,t in enumerate(self._tups) for k in t }
