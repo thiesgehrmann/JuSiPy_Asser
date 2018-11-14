@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -22,6 +23,8 @@ class GRAIN(object):
         """
         matrix: if None, the dataset is loaded from file. Otherwise, matrix is used as the dataset.
         """
+        print('\rLoading GRAIN%s' % (' '*100), end='' )
+
         if matrix is not None and isinstance(matrix, pd.DataFrame):
             self._matrix = matrix
         else:
@@ -30,6 +33,7 @@ class GRAIN(object):
             m.Hectares = m.Hectares.apply(lambda x: str(x).replace(' ','').replace('.', '').replace(',', '.'))
             m['Projected investment'] = m['Projected investment'].apply(lambda x: str(x).replace(' ','').replace('.', '').replace(',', '.') if isinstance(x, str) else None)
             self._matrix = self.__prepareMatrix(m)
+
         #fi
         self._countries = None
     #edef

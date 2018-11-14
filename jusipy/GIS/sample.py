@@ -1,5 +1,5 @@
 import numpy as np
-from .. import landcover
+from ..latlong_features import GLCF
 
 def _random_unit_sphere():
     """
@@ -47,7 +47,7 @@ def random_latlong(land=False, glcf=None, size=1):
     points = None
     if land:
         if glcf is None:
-            glcf = landcover.GLCF(resolution='1deg')
+            glcf = GLCF(resolution='1deg')
         #fi
         points = [ _random_latlong_land(glcf) for i in range(size) ]
     else:

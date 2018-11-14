@@ -3,6 +3,21 @@ from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 import urllib
 import os
 
+def mkdir(dirname=None, filename=None):
+    """
+    Make a directory structure
+    Inputs:
+        dirname: Make a directory with this name, or:
+        filename: Make a directory for this file
+    """
+    if (dirname is None) and (filename is not None):
+        dirname = os.path.dirname(filename)
+    #fi
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    #fi
+#edef
+
 def download(url, filename, username=None, password=None, overwrite=False):
     """
     Download a file from the web using requests interface. Doesn't allow FTP.

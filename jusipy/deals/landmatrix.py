@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -22,6 +23,7 @@ class LandMatrix(object):
         """
         matrix: if None, the dataset is loaded from file. Otherwise, matrix is used as the dataset.
         """
+        print('\rLoading LandMatrix%s' % (' '*100), end='' )
         if matrix is not None and isinstance(matrix, pd.DataFrame):
             self._matrix = matrix
         else:
@@ -63,6 +65,10 @@ class LandMatrix(object):
         M['investor_country'] = M['investor_country'].apply(lambda x: x.split(',') if isinstance(x, str) else [])
         M['target_country_iso3'] = M.target_country.apply(lambda c: CC[c].iso3)
         M['investor_country_iso3'] = M.investor_country.apply(lambda L: [ cc.iso3 for cc in CC[L]])
+
+        lat_long = pd.read_pickle('%s/landMatrix_latlong.pkl' % dir_path)
+        M = M.join(lat_long)
+        M = M.loc[ np.array([ isinstance(x, float) for x in M.lat]) ]
 
         return M
     #edef

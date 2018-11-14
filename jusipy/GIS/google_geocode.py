@@ -45,9 +45,11 @@ class GoogleCode(object):
         if (lat, long) not in self._cache:
             result = self._queryLatlong(lat, long)
             try:
-                self._cache[(lat, long)] = result['results'][0]['formatted_address']
+                res = result['results'][0]
+                res = { '_'.join(f['types']): f['long_name'] for f in res['address_components']  }
+                self._cache[(lat, long)] = res
             except Exception as e:
-                self._cache[(lat, long)] = None
+                self._cache[(lat, long)] = {}
             #fi
         #fi
         return self._cache[(lat, long)]

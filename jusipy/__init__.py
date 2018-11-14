@@ -1,5 +1,5 @@
 from . import GIS
-from . import landcover
 from . import utils
 from . import deals
-from . import features
+from . import country_features
+from . import latlong_features
