@@ -11,6 +11,7 @@ class NaturalEarth_single(object):
     """
     Downside... Distance is euclidean... Not geodesic...
     This exaggerates distances at the poles... How to fix?
+    NOTE: NaturalEarth points are given in (long,lat)... Need to reverse points!!
     """
     def __init__(self, file):
         print('\rLoading NaturalEarth(%s)%s' % (file, ' '*100), end='')
@@ -108,22 +109,25 @@ class NaturalEarth_single(object):
         Downside... Distance is euclidean... Not geodesic...
         This exaggerates distances at the poles... How to fix?
         Input:
-            points: a list of tuples, or shapely.geometry.Point objects
+            points: a list of tuples, or shapely.geometry.Point objects, in (lat, long) format
         Output:
             distances: an np.array of length len(points) describing the EUCLIDEAN DISTANCE in the lat/long projection
             indexes: an np.array of length len(points) describing the index in the self._DF dataframe
         """
-        points = [ sp.geometry.Point(p) if not isinstance(p, sp.geometry.Point) else p for p in points ]
+        points = [ sp.geometry.Point(p[1], p[0]) if not isinstance(p, sp.geometry.Point) else sp.geometry.Point(p.y, p.x) for p in points ]
         min_dist        = np.ones(len(points)) * 1e100
         min_dist_df_idx = np.ones(len(points)) * 1e100
 
+        point_corr = np.array([ ((np.cos(np.pi*(p.y/90))+1)/2)**(1/1.5) for p in points ])
         for itype in self._indexes:
             func      = self._indexes[itype]
             dist, idx = func(points)
+            dist = dist * point_corr
 
             min_dist_df_idx[dist < min_dist] = idx[dist < min_dist]
             min_dist[dist < min_dist] = dist[dist < min_dist]
         #efor
+
         return min_dist, min_dist_df_idx
     #edef
 

@@ -1,6 +1,8 @@
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.cluster import MeanShift
+from sklearn.mixture import GaussianMixture
+
 import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
@@ -93,13 +95,43 @@ class Negative(object):
         return self._tsne
     #edef
 
-    def cluster(self, bandwidth=10, **kwargs):
-        if self._tsne is None:
+    def cluster(self, tsne=True, method='meanshift', **kwargs):
+        """
+        Cluster the embedded data
+        Input:
+            tsne: Boolean. Use the TSNE data. False means use PCA
+            method: ['meanshift', 'gmm', callable object]
+            **kwargs: arguments for the specific clustering method
+        Output:
+            an array of cluster IDs (of length # of points in dataset)
+        """
+
+        data = self._tsne if tsne else self._pca
+
+        if data is None:
             return None
         #fi
+        method = method.lower()
         print('\rPerforming Clustering')
-        self._clusters = MeanShift(bandwidth=bandwidth).fit(self._tsne).labels_
+        self._clusters = None
+        if method == 'gmm':
+            self._clusters = GaussianMixture(**kwargs).fit_predict(data)
+        elif method == 'meanshift':
+            self._clusters = MeanShift(bandwidth=bandwidth).fit(data).labels_
+        elif hasattr(method, '__call__'):
+            self._clusters = method(data)
+        else:
+            self._clusters = None
+        #fi
         return self._clusters
+    #edef
+
+    def _cluster_meanshift(self, bandwidth=10, **kwargs):
+        return MeanShift(bandwidth=bandwidth).fit(self._tsne).labels_
+    #edef
+
+    def _cluster_gmm(self, **kwargs):
+        return GaussianMixture(**kwargs).fit_predict(self._tsne)
     #edef
 
     def negatives(self, threshold=0.95, **kwargs):
