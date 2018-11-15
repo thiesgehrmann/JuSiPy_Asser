@@ -42,7 +42,7 @@ def get(df, feature, fuzzy=None, country_col='country', year_col='year'):
                 return 'newest'
             #etry
         #edef
-        years     = [ detect_year(y) for y in df[years_col].values ]
+        years     = [ detect_year(y) for y in df[year_col].values ]
     else:
         years = ['newest' for c in countries]
     #fi
