@@ -33,7 +33,7 @@ def get(df, feature, fuzzy=None, country_col='country', year_col='year'):
         def detect_year(year):
             if pd.isna(year):
                 return 'newest'
-            elif year.lower().strip() == 'newest':
+            elif str(year).lower().strip() == 'newest':
                 return 'newest'
             #fi
             try:
