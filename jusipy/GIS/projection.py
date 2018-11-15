@@ -66,3 +66,19 @@ def draw(matrix, lat=0, long=0, ax=None):
 
     return ax
 #edef
+
+def lat_distance_correction(self, lat):
+    """
+    When calculating distances between geodesic coordinates in the euclidean space,
+    distances at the poles (-90, 90) tend to become exaggerated.
+    This function provides a heuristic correction factor for distances calculated
+    in a euclidean space based on the latitude of the query point.
+
+    Input:
+        lat: Float [-90,90] The latitude
+    Output:
+        Correction factor (multiply the distance with this value) [0,1]
+        Is near 1 near equator, and near 0 near the pole.
+    """
+    return ((np.cos(np.pi*(lat/90))+1)/2)**(1/1.5)
+#edef

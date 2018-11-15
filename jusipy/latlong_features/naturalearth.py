@@ -7,6 +7,8 @@ import pandas as pd
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
+from .. import GIS
+
 class NaturalEarth_single(object):
     """
     Downside... Distance is euclidean... Not geodesic...
@@ -118,7 +120,7 @@ class NaturalEarth_single(object):
         min_dist        = np.ones(len(points)) * 1e100
         min_dist_df_idx = np.ones(len(points)) * 1e100
 
-        point_corr = np.array([ ((np.cos(np.pi*(p.y/90))+1)/2)**(1/1.5) for p in points ])
+        point_corr = np.array([ GIS.projection.lat_distance_correction(p.y) for p in points ])
         for itype in self._indexes:
             func      = self._indexes[itype]
             dist, idx = func(points)
