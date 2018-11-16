@@ -67,7 +67,7 @@ def draw(matrix, lat=0, long=0, ax=None):
     return ax
 #edef
 
-def lat_distance_correction(self, lat):
+def lat_distance_correction(lat):
     """
     When calculating distances between geodesic coordinates in the euclidean space,
     distances at the poles (-90, 90) tend to become exaggerated.
