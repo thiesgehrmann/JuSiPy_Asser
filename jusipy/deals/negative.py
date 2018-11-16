@@ -24,7 +24,7 @@ class Negative(object):
                    1 means negative, 0 means positive/not negative
 
     """
-    def __init__(self, labels, features, positive_col='positive', autorun=True, **kwargs):
+    def __init__(self, labels, features, positive_col='positive', autorun=False, **kwargs):
         """
         Inputs:
             labels: a dataframe of labels
@@ -52,11 +52,19 @@ class Negative(object):
     def run(self, dimred='tsne', **kwargs):
         """
         Run the negative selection pipeline
+
+        Typical usage:
+            run(dimred='tsne', bandwidth=10) # Seems to be an appropriate bandwidth for tsne
+            run(dimred='umap', bandwidth=2)  # Seems to be an appropriate bandwidth for umap
         Input:
-            dimred: String. Dimensionality reduction to use
+            dimred: String. Dimensionality reduction to use [pca|tsne|umap]
+            **kwargs: Arguments for the different stages in the pipeline, which include
+                * method : String. Type of clustering to use (see) self.cluster() for information
+                * bandwidth : Float. STD to use for MeanShift clustering
         """
         if self._znorm is None:
             self.znorm(**kwargs)
+            self._dimred = None
         #fi
         if (self._dimred is None) or (dimred is not None):
             if dimred is None:
@@ -70,10 +78,13 @@ class Negative(object):
             else:
                 self.tsne(**kwargs)
             #fi
+            self._clusters = None
         #fi
 
         if self._clusters is None:
             self.cluster(**kwargs)
+            self._negatives    = None
+            self._neg_clusters = None
         #fi
         if self._negatives is None:
             self.get_negatives(**kwargs)
@@ -140,17 +151,17 @@ class Negative(object):
 
         data = self._dimred
 
-        method = method.lower()
+        method = method.lower() if isinstance(method, str) else method
         print('\rPerforming Clustering')
         self._clusters = None
         if method == 'gmm':
-            self._clusters = GaussianMixture(**kwargs).fit_predict(data)
+            self._clusters = GaussianMixture().fit_predict(data)
         elif method == 'meanshift':
-            self._clusters = MeanShift(bandwidth=bandwidth, **kwargs).fit(data).labels_
+            self._clusters = MeanShift(bandwidth=bandwidth).fit(data).labels_
         elif hasattr(method, '__call__'):
             self._clusters = method(data)
         else:
-            self._clusters = MeanShift(bandwidth=bandwidth, **kwargs).fit(data).labels_
+            self._clusters = MeanShift(bandwidth=bandwidth).fit(data).labels_
         #fi
         return self._clusters
     #edef
@@ -250,10 +261,10 @@ class Negative(object):
             axes[2].legend()
         #fi
 
-        if self._negatives is not None:
+        if self._neg_clusters is not None:
             axes[3].set_title('Negative annotation')
-            axes[3].scatter(*list(zip(*self._dimred[self._neg_clusters==1,:])), c=positive_color, s=1, zorder=3, label='positive')
-            axes[3].scatter(*list(zip(*self._dimred[self._neg_clusters==0,:])), c=negative_color, s=1, zorder=2, label='negative')
+            axes[3].scatter(*list(zip(*self._dimred[self._neg_clusters==0,:])), c=positive_color, s=1, zorder=2, label='positive')
+            axes[3].scatter(*list(zip(*self._dimred[self._neg_clusters==1,:])), c=negative_color, s=1, zorder=1, label='negative')
             axes[3].set_xlabel('Dim.Red. Component 1')
             axes[3].set_ylabel('Dim.Red. Component 2')
             axes[3].legend()
