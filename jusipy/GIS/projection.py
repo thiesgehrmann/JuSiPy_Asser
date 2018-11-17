@@ -82,3 +82,27 @@ def lat_distance_correction(lat):
     """
     return ((np.cos(np.pi*(lat/90))+1)/2)**(1/1.5)
 #edef
+
+
+def haversine(coord1, coord2):
+    """
+    Calculate the great-circle distance between two coordinates.
+    Inputs:
+        coord1: coordinate one (lat, long)
+        coord2: coordinate two (lat, long)
+    Output:
+        Distance in meters along the globe.
+    """
+    R = 6372800  # Earth radius in meters
+    lat1, lon1 = coord1
+    lat2, lon2 = coord2
+
+    phi1, phi2 = np.radians(lat1), np.radians(lat2)
+    dphi       = np.radians(lat2 - lat1)
+    dlambda    = np.radians(lon2 - lon1)
+
+    a = np.sin(dphi/2)**2 + \
+        np.cos(phi1)*np.cos(phi2)*np.sin(dlambda/2)**2
+
+    return 2*R*np.atan2(np.sqrt(a), np.sqrt(1 - a))
+#edef
