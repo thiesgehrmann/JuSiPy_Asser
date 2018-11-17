@@ -2,7 +2,7 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from sklearn.cluster import MeanShift
 from sklearn.mixture import GaussianMixture
-import umap
+#import umap
 
 import matplotlib.pylab as plt
 import numpy as np
