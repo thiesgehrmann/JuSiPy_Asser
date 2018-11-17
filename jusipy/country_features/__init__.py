@@ -1,6 +1,7 @@
 from .lp import WB_LGAF, WB_SE, LMM_PICL, LMM_LSIC, WB_LG, TI_CPI
 from .wb import WB_ARD, WB_SPL, WB_SD
 from .un_features import UN_HDI
+from .wb_ldi import WB_LDI
 
 _datasets = [ WB_LGAF, WB_SE, LMM_PICL, LMM_LSIC, WB_LG, TI_CPI, WB_ARD, WB_SPL, WB_SD, UN_HDI ]
 
