@@ -54,6 +54,7 @@ class Models:
         self._labels = label_df
         self._model = None
         self._m_name = None
+        self._models = {}
 
 
     def evaluate(self):
@@ -84,51 +85,61 @@ class Models:
 
 
 
-    def fit(self):
+    def fit(self, clf_list):
 
+        for given_model in clf_list:
+            if given_model == 'rf':
         #self._model = RandomForestClassifier(n_estimators=10)
-        self._model = RandomForestClassifier(n_estimators=10 ,
-                                min_samples_split= 11,
-                                min_samples_leaf=17,
-                                bootstrap = True,
-                                criterion = 'entropy',
-                                max_depth = 11,
-                                max_features = 11,
-                                n_jobs=-1,
-                                random_state=random_state)
-        self._model.fit(self._data, np.ravel(self._labels))
-        print('train accuracy for RF: '+str(jaccard_similarity_score(self._model.predict(self._data), self._labels)))
+                self._model = RandomForestClassifier(n_estimators=10 ,
+                                        min_samples_split= 11,
+                                        min_samples_leaf=17,
+                                        bootstrap = True,
+                                        criterion = 'entropy',
+                                        max_depth = 11,
+                                        max_features = 11,
+                                        n_jobs=-1,
+                                        random_state=random_state)
+
+                fitmodel = self._model.fit(self._data, np.ravel(self._labels))
+                self._models['rf'] = fitmodel
+                print('train accuracy for RF: '+str(jaccard_similarity_score(self._model.predict(self._data), self._labels)))
 
         #save rf model
-        filename = "models/rf_model.sav"
-        pickle.dump(self._model, open(filename, 'wb'))
+        #filename = "models/rf_model.sav"
+        #pickle.dump(self._model, open(filename, 'wb'))
 
+            if given_model == 'svm':
 
-        self._model = svm.SVC(kernel='linear', probability=True,random_state=random_state)
-        self._model.fit(self._data, np.ravel(self._labels))
-        print('train accuracy for linear SVM: '+str(jaccard_similarity_score(self._model.predict(self._data), self._labels)))
+                self._model = svm.SVC(kernel='linear', probability=True,random_state=random_state)
+                fitmodel = self._model.fit(self._data, np.ravel(self._labels))
+                self._models['svm'] = fitmodel
+                print('train accuracy for linear SVM: '+str(jaccard_similarity_score(self._model.predict(self._data), self._labels)))
 
-        #save svm linear model
-        filename = "models/svm_linear_model.sav"
-        pickle.dump(self._model, open(filename, 'wb'))
+                #save svm linear model
+                #filename = "models/svm_linear_model.sav"
+                #pickle.dump(self._model, open(filename, 'wb'))
 
-
-        self._model = LogisticRegression(random_state=random_state, solver='lbfgs', multi_class='multinomial')
-        self._model.fit(self._data, np.ravel(self._labels))
-        print('train accuracy for logistic regression: '+str(jaccard_similarity_score(self._model.predict(self._data), self._labels)))
+            if given_model == 'lr':
+                self._model = LogisticRegression(random_state=random_state, solver='lbfgs', multi_class='multinomial')
+                fitmodel = self._model.fit(self._data, np.ravel(self._labels))
+                self._models['logistic'] = fitmodel
+                print('train accuracy for logistic regression: '+str(jaccard_similarity_score(self._model.predict(self._data), self._labels)))
 
         #save logistic model
-        filename = "models/logistic_model.sav"
-        pickle.dump(self._model, open(filename, 'wb'))
+        #filename = "models/logistic_model.sav"
+        #pickle.dump(self._model, open(filename, 'wb'))
 
+            if given_model == 'svr':
 
-        self._model = SVR(kernel='linear', C=1e3)
-        self._model.fit(self._data, np.ravel(self._labels))
+                self._model = SVR(kernel='linear', C=1e3)
+                fitmodel = self._model.fit(self._data, np.ravel(self._labels))
+                self._models['svr'] = fitmodel
+        #self._model.fit(self._data, np.ravel(self._labels))
         #print('train accuracy for SVR: '+str(jaccard_similarity_score(self._model.predict(self._data), self._labels)))
 
         #save svr model
-        filename = "models/svr_linear_model.sav"
-        pickle.dump(self._model, open(filename, 'wb'))
+        #filename = "models/svr_linear_model.sav"
+        #pickle.dump(self._model, open(filename, 'wb'))
 
         #self._model = xgb.XGBClassifier(n_estimators=10, objective="binary:logistic")
         #self._model.fit(self._data, np.ravel(self._labels))
@@ -139,10 +150,7 @@ class Models:
         #pickle.dump(self._model, open(filename, 'wb'))
 
 
-
-
-
-    def predicta(self, mdl, example_df):
+    def predicta(self, mdl, data):
         """
         Get the prediction for a whole dataframe,
         choose:
@@ -160,24 +168,25 @@ class Models:
         elif mdl == "svr":
             loaded_model = pickle.load(open("models/svr_linear_model.sav", 'rb'))
 
+        if mdl == 'svr':
+            ypred = pd.DataFrame({'predict_dataframe': pd.Series(loaded_model.predict(data))})
+        else:
+            ypred = pd.DataFrame({'predicted_probability': pd.Series(loaded_model.predict_proba(data)[:, 1]),
+                                      'predicted_class': pd.Series(loaded_model.predict(data))})
+        return(ypred)
 
-        for index,row in example_df.iterrows():
 
-            to_read_df = row[:].values
-            #print(to_read_df)
-            if not ((mdl== "rf") or (mdl== "svr")):
-                print("Not running in RF or SVR")
-                final_prediction.append(loaded_model.predict_proba(np.reshape(to_read_df, (1,self._data.shape[1]))))
-                #print("fp", final_prediction)
-            #final_prediction.append(loaded_model.predict_proba(to_read_df.values))
-            #contributions = np.multiply(to_read_df, loaded_model.coef_.reshape((self._data.shape[1],)))
-            #feature_number = np.arange(len(contributions)) +1
-            #features_coefficients = dict(zip(list(self._data), contributions))
-            #return(eli5.explain_prediction_df(loaded_model, row[:], feature_names=list(self._data)))
 
-            explanation.append(eli5.explain_prediction_df(loaded_model, row[:], feature_names=list(self._data)))
+    def predictb(self, mdl, data):
+        for model in self._models:
+            if model == 'svr':
+                ypred = pd.DataFrame({'predict_dataframe': pd.Series(model.predict(data))})
+            else:
+                ypred = pd.DataFrame({'predicted_probability': pd.Series(model.predict_proba(data)[:, 1]),
+                                      'predicted_class': pd.Series(loaded_model.predict(data))})
+                feats = eli5.explain_prediction_df(model, data, feature_names=list(self._data))
+            return(ypred)
 
-        return(explanation, final_prediction)
 
 
     def make_and_plot_AUROC(self,classifier, X, y, n_folds=10, RF=True, shuffle=True, save_name=''):
