@@ -2,6 +2,7 @@ from .naturalearth import NaturalEarth
 from .glcf_avhrr import GLCF
 from .usgs import USGS
 from .mrds import MRDS
+from .cru import CRU
 
 def All(datasets=None):
     from .all_datasets import All_latlong
@@ -10,7 +11,8 @@ def All(datasets=None):
         datasets = [ NaturalEarth(),
                      GLCF(resolution='1deg'),
                      GLCF(resolution='8km'),
-                     MRDS() ]
+                     MRDS(),
+                     CRU() ]
     #fi
 
     return All_latlong(datasets)
