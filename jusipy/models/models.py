@@ -184,6 +184,43 @@ class Models:
             return(ypred)
 
         
+    def global_feautures_c(self, data):
+        loaded_model1 = pickle.load(open("models/svm_linear_model.sav", 'rb'))
+        loaded_model2 = pickle.load(open("models/logistic_model.sav", 'rb'))   
+        loaded_model3 = pickle.load(open("models/rf_model.sav", 'rb'))
+        loaded_model4 = pickle.load(open("models/svr_linear_model.sav", 'rb'))
+        
+        self._models['logistic'] = loaded_model2
+        self._models['svm'] = loaded_model1
+        self._models['rf'] = loaded_model3
+        self._models['svr'] = loaded_model4
+        self._data = data
+    
+        return self.global_feautures_b(data)
+        
+    
+            
+    def global_feautures_b(self, data):
+        #data = self._data
+        final = pd.DataFrame()
+        for model in self._models:
+            #print(model)
+            #print(self._model[str(model)
+            final_features = eli5.explain_weights_df(self._models[str(model)], feature_names= list(data))
+            #print(final_features)
+            final_features = final_features.sort_values('feature').reset_index(drop=True)
+            #print(final_features)
+            #if not len(final_features.feature) = len(list(data)):
+            ff = list(set(final_features.feature) - set(list(data))) 
+            if not ff:
+                final_features = final_features.append({'feature': '<BIAS>'}, ignore_index=True).sort_values('feature').reset_index(drop=True)
+            else:
+                final_features = final_features.sort_values('feature').reset_index(drop=True)
+            final = pd.concat([final, final_features], axis = 1)
+            
+        return(final)
+        
+    
     
     def make_and_plot_AUROC(self,classifier, X, y, n_folds=10, RF=True, shuffle=True, save_name=''):
         """ Calculates the mean AUROC and plots it."""
