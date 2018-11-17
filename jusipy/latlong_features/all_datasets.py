@@ -3,7 +3,7 @@ class All_latlong(object):
         self._datasets = datasets
     #edef
 
-    def get(self, points, **kwargs):
+    def get(self, points, *pargs, **kwargs):
         """
         Perform a lookup for many points
         Inputs:
