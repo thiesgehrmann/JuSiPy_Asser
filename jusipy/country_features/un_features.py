@@ -72,7 +72,7 @@ class UN_HDI(object):
     #edef
 
 
-    def get(self, countries, *pargs, **kwargs):
+    def getMany(self, countries, df=False, *pargs, **kwargs):
         """
         Get UN HDI features
         Input:
@@ -81,7 +81,30 @@ class UN_HDI(object):
         Output:
             A dataframe of HDI features, per country in input
         """
-        R = [ self._index[c.lower()] if c.lower() in self._index else self._empty for c in countries ]
-        return pd.DataFrame(R, columns = self._labels)
+        if isinstance(countries,str):
+            countries = [countries]
+        R = [ self._nt(*self._index[c.lower()] if (c.lower() in self._index) else self._empty) for c in countries ]
+        print(R)
+        if df:
+            return pd.DataFrame(R, columns = self._labels)
+        else:
+            return R
+        #fi
     #edef
+
+    def get(self, country, *pargs, **kwargs):
+        """
+        Get UN HDI features
+        Input:
+            countries: a list of ISO3 countries
+            pargs, kwargs: Ignored inputs
+        Output:
+            A dataframe of HDI features, per country in input
+        """
+        c = country
+        return self._nt(*self._index[c.lower()]) if (c.lower() in self._index) else self._empty
+
+        #fi
+    #edef
+
 #eclass
