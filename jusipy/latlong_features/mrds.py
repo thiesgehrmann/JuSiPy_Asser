@@ -12,8 +12,10 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class MRDS:
     """
-    MRDS dataset for minerals 
+    MRDS dataset for minerals
     https://mrdata.usgs.gov/mrds/
+
+    Provides a get function that returns distances.
     """
     def __init__(self):
         dl_filename = '%s/data/mrds/mrds-csv.zip' % dir_path
@@ -25,7 +27,7 @@ class MRDS:
             zf = zipfile.ZipFile(file=dl_filename)
             zf.extract('mrds.csv', path=os.path.dirname(csv_filename))
         #fi
-        self._df = pd.read_csv(csv_filename)  
+        self._df = pd.read_csv(csv_filename)
         self._df = self._df[['latitude','longitude','ore','gangue']]
         self._df = self._df[~(pd.isna(self._df.latitude) | pd.isna(self._df.longitude))]
         self._df.latitude = self._df.latitude.astype(np.number)
@@ -33,16 +35,21 @@ class MRDS:
         self._idx = cKDTree(list(zip(self._df.latitude, self._df.longitude)))
     #edef
 
-        
+
     def calculate(self, lat, long):
         """
-        Calculate for a single point
+        Calculate the distance to the nearest mine for a single point
+        Inputs:
+            lat : latitude
+            long: longitude
+        Outputs:
+            Corrected euclidean distance (see jusipy.GIS.projection.lat_distance_correction)
         """
         dist, idx = self._idx.query([(lat, long)], k=1)
         return(dist[0] * jusipy.GIS.projection.lat_distance_correction(lat))
     #edef
-    
-    def get(self, given_list, **kwargs):
+
+    def get(self, points, **kwargs):
         """
         For each point in point, return the distance to the nearest element in each dataset
         Downside... Distance is euclidean... Not geodesic...
@@ -54,12 +61,8 @@ class MRDS:
             distances: a DataFrame of EUCLIDEAN distances for each point (rows) to the
                        closest element in each dataset (columns)
         """
-        dists, idxs = self._idx.query(given_list, k=1)
-        corr = [ GIS.projection.lat_distance_correction(lat) for (lat,long) in given_list ]
+        dists, idxs = self._idx.query(points, k=1)
+        corr = [ GIS.projection.lat_distance_correction(lat) for (lat,long) in points ]
         dist = np.array([ d*c for (d,c) in zip(dists, corr) ])
         return pd.DataFrame.from_dict({'distance_to_mine':dist})
     #edef
-    
-            
-            
-        

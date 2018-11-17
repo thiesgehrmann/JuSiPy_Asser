@@ -72,7 +72,7 @@ class CountryFeatures(object):
         #fi
     #edef
 
-    def get(self, countries, years='newest', fuzzy=None, df=False):
+    def get(self, countries, years='newest', fuzzy=None, df=False, *pargs, **kwargs):
         """
         Retrieve features for a country (or list of countries)
         Inputs:
