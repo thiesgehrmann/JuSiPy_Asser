@@ -85,7 +85,7 @@ class Models:
 
 
 
-    def fit(self, clf_list):
+    def fit(self, clf_list=['lr']):
 
         for given_model in clf_list:
             if given_model == 'rf':
@@ -177,15 +177,17 @@ class Models:
 
 
 
-    def predictb(self, mdl, data):
-        for model in self._models:
-            if model == 'svr':
-                ypred = pd.DataFrame({'predict_dataframe': pd.Series(model.predict(data))})
+    def predict_proba(self, data):
+        ypreds = {}
+        for model_name, model in self._models.items():
+            if model_name == 'svr':
+                ypreds[model_name] = model.predict(data)
             else:
-                ypred = pd.DataFrame({'predicted_probability': pd.Series(model.predict_proba(data)[:, 1]),
-                                      'predicted_class': pd.Series(loaded_model.predict(data))})
-                feats = eli5.explain_prediction_df(model, data, feature_names=list(self._data))
-            return(ypred)
+                ypreds[model_name] = model.predict_proba(data)[:, 1]
+            #fi
+        #efor
+        return pd.DataFrame.from_dict(ypreds)
+    #edef
 
 
 
