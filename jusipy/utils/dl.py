@@ -33,7 +33,6 @@ def download(url, filename, username=None, password=None, overwrite=False):
     if not(os.path.exists(filename)) or overwrite:
         #urllib.request.urlretrieve(urls[resolution], fileName)
         auth = HTTPBasicAuth(username, password) if not((username is None) and (password is None)) else None
-        print(auth)
         r = requests.get(url, auth=auth)
 
         if r.status_code == 200:
