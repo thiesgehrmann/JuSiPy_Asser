@@ -1,9 +1,12 @@
 import pandas as pd
 import numpy as np
+from collections import namedtuple
 
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
+from .. import GIS
 
 class UN_HDI(object):
     """
@@ -13,25 +16,29 @@ class UN_HDI(object):
     function: get
     """
     def __init__(self):
-        cc = jusipy.GIS.CountryCode()
+        cc = GIS.CountryCode()
 
         unhdi = pd.read_csv('%s/data/UN_HDI.tsv' % dir_path, sep='\t')
         unhdi['country_iso3'] = unhdi.Country.apply(lambda c: cc[c].iso3)
         unhdi = unhdi.rename(columns={'Human Development Index (HDI)': 'Human_Development_Index',
-                                      'Inequality-adjusted HDI (IHDI)': 'Inequality-adjusted_HDI',
+                                      'Inequality-adjusted HDI (IHDI)': 'Inequality_adjusted_HDI',
                                       'Coefficient of human inequality': 'Coefficient_of_human_inequality',
                                       'Inequality in life expectancy': 'Inequality_in_life_expectancy',
-                                      'Inequality-adjusted life expectancy index': 'Inequality-adjusted_life_expectancy_index',
+                                      'Inequality-adjusted life expectancy index': 'Inequality_adjusted_life_expectancy_index',
                                       'Inequality in education': 'Inequality_in_education',
-                                      'Inequality-adjusted education index': 'Inequality-adjusted_education_index',
+                                      'Inequality-adjusted education index': 'Inequality_adjusted_education_index',
                                       'Inequality in income': 'Inequality_in_income',
-                                      'Inequality-adjusted income index': 'Inequality-adjusted_income_index',
+                                      'Inequality-adjusted income index': 'Inequality_adjusted_income_index',
                                       'Income_Quintile ratio': 'Income_Quintile_ratio',
                                       'Income_Palma ratio ': 'Income_Palma_ratio',
                                       'Gini coefficient': 'Gini_coefficient'})
         unhdi = unhdi.drop(columns=['Country'])
         unhdi = unhdi.set_index('country_iso3')
+        for col in unhdi.columns:
+            unhdi[col] = unhdi[col].astype(float)
+        #efor
         self._features = unhdi
+        self._nt = namedtuple('UN_HDI_features', self._features.columns)
         self._countries_iso3 = sorted(set(self._features.index.values))
         self._index = { iso3.lower() : r.values for  (iso3, r) in self._features.iterrows() }
         self._labels = self._features.columns
@@ -65,7 +72,7 @@ class UN_HDI(object):
     #edef
 
 
-    def get(self, countries, *pargs, **kwargs):
+    def getMany(self, countries, df=False, *pargs, **kwargs):
         """
         Get UN HDI features
         Input:
@@ -74,7 +81,30 @@ class UN_HDI(object):
         Output:
             A dataframe of HDI features, per country in input
         """
-        R = [ self._index[c.lower()] if c.lower() in self._index else self._empty for c in countries ]
-        return pd.DataFrame(R, columns = self._labels)
+        if isinstance(countries,str):
+            countries = [countries]
+        R = [ self._nt(*self._index[c.lower()] if (c.lower() in self._index) else self._empty) for c in countries ]
+        print(R)
+        if df:
+            return pd.DataFrame(R, columns = self._labels)
+        else:
+            return R
+        #fi
     #edef
+
+    def get(self, country, *pargs, **kwargs):
+        """
+        Get UN HDI features
+        Input:
+            countries: a list of ISO3 countries
+            pargs, kwargs: Ignored inputs
+        Output:
+            A dataframe of HDI features, per country in input
+        """
+        c = country
+        return self._nt(*self._index[c.lower()]) if (c.lower() in self._index) else self._empty
+
+        #fi
+    #edef
+
 #eclass
