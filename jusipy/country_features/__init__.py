@@ -3,7 +3,7 @@ from .wb import WB_ARD, WB_SPL, WB_SD
 from .un_features import UN_HDI
 from .wb_ldi import WB_LDI
 
-_datasets = [ WB_LGAF, WB_SE, LMM_PICL, LMM_LSIC, WB_LG, TI_CPI, WB_ARD, WB_SPL, WB_SD, UN_HDI ]
+_datasets = [ WB_LGAF, WB_SE, LMM_PICL, LMM_LSIC, WB_LG, TI_CPI, WB_ARD, WB_SPL, WB_SD, UN_HDI, WB_LDI ]
 
 def All(datasets=None):
     from .all_datasets import All_country as _all_datasets
