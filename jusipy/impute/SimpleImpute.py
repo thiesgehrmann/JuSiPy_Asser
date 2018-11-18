@@ -44,17 +44,17 @@ def set_column_types(df):
         if hasattr(series, 'str'):
             not_na = series.str.isnumeric()[~pd.isna(series)]
             if all(not_na):
-                print('%s numeric' % col)
+                #print('%s numeric' % col)
                 new_df[col] = pd.to_numeric(series, errors='coerce')
                 types[col] = 'numeric'
             else:
-                print('%s categorical' % col)
+                #print('%s categorical' % col)
                 new_df[col].astype('category')
                 types[col] = 'category'
                 # make it categorical
             #fi
         else:
-            print('%s numeric' % col)
+            #print('%s numeric' % col)
             new_df[col] = pd.to_numeric(series, errors='coerce')
             types[col] = 'numeric'
         #edef

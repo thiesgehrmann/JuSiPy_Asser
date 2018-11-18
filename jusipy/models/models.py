@@ -202,21 +202,16 @@ class Models:
             
     def global_feautures_b(self, data):
         #data = self._data
-        final = pd.DataFrame()
+        final = pd.DataFrame.from_dict({'feature' : list(data.columns) + ['<BIAS>']})
         for model in self._models:
             #print(model)
             #print(self._model[str(model)
             final_features = eli5.explain_weights_df(self._models[str(model)], feature_names= list(data))
-            #print(final_features)
-            final_features = final_features.sort_values('feature').reset_index(drop=True)
-            #print(final_features)
-            #if not len(final_features.feature) = len(list(data)):
-            ff = list(set(final_features.feature) - set(list(data))) 
-            if not ff:
-                final_features = final_features.append({'feature': '<BIAS>'}, ignore_index=True).sort_values('feature').reset_index(drop=True)
-            else:
-                final_features = final_features.sort_values('feature').reset_index(drop=True)
-            final = pd.concat([final, final_features], axis = 1)
+            final_features = final_features[['feature','weight']].set_index('feature')
+            final_features = final_features.rename(columns={'weight':model})
+            final_features.reset_index(drop=True, inplace=True)
+            final = final.join(final_features)
+        #efor
             
         return(final)
         
