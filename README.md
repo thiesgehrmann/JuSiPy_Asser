@@ -2,7 +2,7 @@
 JuSi.Py work on the Asser challenge
 [https://www.hackathonforgood.org/asser-institute/](https://www.hackathonforgood.org/asser-institute/)
 
-![Distance to nearest port](/readme/distance_to_port.png)
+![Land Grabbing Risk Score](/readme/grid_1000_risk_score.png)
 
 ## Dependencies
 * PIL (pillow)
