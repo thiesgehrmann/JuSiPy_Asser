@@ -1,11 +1,22 @@
-- pip pillow
-- numpy
-- scipy
-- scikit-learn
-- requests
-- pyhdf
-- matplotlib
-- gdal
-- libspatialite
-- pip:
- - pyModis
+name: jusipy_asser
+dependencies:
+  - python>=3.7
+  - bokeh
+  - holoviews
+  - requests
+  - scipy
+  - scikit-learn
+  - eli5
+  - geopandas
+  - geoviews
+  - gdal
+  - pyhdf
+  - matplotlib
+  - numpy
+  - pandas
+  - shapely
+  #- umap
+  #- pip
+  #- pip:
+  #  - pillow
+  #  - pyModis 

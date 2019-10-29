@@ -1,4 +1,3 @@
-from pandas.tools.plotting import parallel_coordinates
 import pandas as pd
 from sklearn.metrics import jaccard_similarity_score
 from sklearn import metrics

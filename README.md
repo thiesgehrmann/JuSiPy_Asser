@@ -5,15 +5,10 @@ JuSi.Py work on the Asser challenge
 ![Land Grabbing Risk Score](/readme/grid_1000_risk_score.png)
 
 ## Dependencies
-* PIL (pillow)
-* difflib
-* geopandas
-* seaborn
-* matplotlib
-* numpy
-* pandas
-* requests
-* scipy
-* shapely
-* sklearn
-* urllib
+You can create a conda environment with the necessary dependencies using:
+
+```bash
+conda create env --file=dependencies.yml
+conda activate jusipy_asser
+```
+
