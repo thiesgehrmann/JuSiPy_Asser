@@ -15,7 +15,7 @@ dependencies:
   - numpy
   - pandas
   - shapely
-  #- umap
+  - umap-learn
   #- pip
   #- pip:
   #  - pillow
